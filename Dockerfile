@@ -1,22 +1,20 @@
-# Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files first (for better caching)
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy source code
+# Copy all files
 COPY . .
 
-# Build the application
+# Install specific postcss version to fix the issue
+RUN npm install postcss@latest
+
+# Generate build without turbopack
 RUN npm run build
 
-# Expose port
 EXPOSE 3000
 
-# Start the application
 CMD ["npm", "start"]
