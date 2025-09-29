@@ -202,7 +202,7 @@ export default function TodoApp() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-              ✨ {userName}'s Todo
+              ✨ {userName}&apos;s Todo
             </h1>
             <p className={`mt-2 ${themeClasses.stats}`}>
               {activeTodos} tasks to complete • {completedTodos} done

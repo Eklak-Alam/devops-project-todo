@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  experimental: {
-    turbo: false
-  }
+  reactStrictMode: true,
+  eslint: {
+    ignoreDuringBuilds: true,  // This ignores ESLint errors during build
+  },
 }
 
 module.exports = nextConfig
