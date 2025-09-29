@@ -102,7 +102,7 @@ export default function TodoApp() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-200 mb-4">
-            ✨ Todo App
+            ✨ Eklak Todo
           </h1>
           <p className="text-gray-300 text-lg">
             Organize your life, one task at a time
