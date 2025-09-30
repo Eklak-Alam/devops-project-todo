@@ -1,38 +1,29 @@
-# Stage 1: Build the app
 FROM node:18-alpine AS builder
 
 WORKDIR /app
-
-# Copy package files first (for dependency caching)
 COPY package*.json ./
+RUN npm ci --only=production
 
-# Set npm registry explicitly (fixes ECONNRESET issues sometimes)
-RUN npm config set registry https://registry.npmjs.org/
-
-# Install deps
-RUN npm install --no-audit --prefer-offline
-
-# Copy source code
 COPY . .
-
-# Ensure correct postcss version
-RUN npm install postcss@latest
-
-# Build the app
 RUN npm run build
 
-
-# Stage 2: Production image
-FROM node:18-alpine
-
+FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Copy only built app + node_modules from builder
-COPY --from=builder /app ./
+ENV NODE_ENV production
 
-# Remove dev dependencies (keep only prod)
-RUN npm prune --production && npm cache clean --force
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+USER nextjs
 
 EXPOSE 3000
+
+ENV PORT 3000
 
 CMD ["npm", "start"]
