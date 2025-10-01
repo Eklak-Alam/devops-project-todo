@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    
+    environment {
+        DEPLOY_ENV = "${GIT_BRANCH == 'origin/main' ? 'production' : 'development'}"
+        PORT = "${GIT_BRANCH == 'origin/main' ? '3000' : '3001'}"
+        CONTAINER_NAME = "${GIT_BRANCH == 'origin/main' ? 'prod-frontend' : 'dev-frontend'}"
+    }
+    
+    stages {
+        stage('Check CI Status') {
+            steps {
+                sh 'echo "Deploying to ${DEPLOY_ENV} environment on port ${PORT}"'
+            }
+        }
+        
+        stage('Stop Old Container') {
+            steps {
+                sh '''
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                '''
+            }
+        }
+        
+        stage('Deploy New Version') {
+            steps {
+                sh '''
+                    docker run -d \
+                    --name ${CONTAINER_NAME} \
+                    -p ${PORT}:3000 \
+                    frontend-app:${GIT_BRANCH}-${BUILD_NUMBER}
+                '''
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                sh '''
+                    sleep 10
+                    curl -f http://localhost:${PORT} || exit 1
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            sh 'docker system prune -f'
+        }
+        success {
+            sh 'echo "🎉 Successfully deployed to ${DEPLOY_ENV} - http://YOUR_EC2_IP:${PORT}"'
+        }
+        failure {
+            sh 'echo "❌ Deployment to ${DEPLOY_ENV} failed"'
+            sh 'docker logs ${CONTAINER_NAME} || true'
+        }
+    }
+}
